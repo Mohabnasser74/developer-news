@@ -1,4 +1,5 @@
 import express from "express";
+
 import {
   getAllUsers,
   getUser,
@@ -6,9 +7,11 @@ import {
   signin,
 } from "../controllers/user.controllers";
 
-export const userRouter = express.Router();
+const userRouter = express.Router();
 
 userRouter.get("/", getAllUsers);
 userRouter.get("/:username", getUser);
 userRouter.post("/signup", signup);
 userRouter.post("/signin", signin);
+
+export default userRouter;

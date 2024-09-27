@@ -6,16 +6,13 @@ We'll use a basic client/server architecture, where a single server is deployed 
 
 ## Storage
 
-We'll use a relational database (schema follows) to fast retrieval of posts and comments. A minimal database implementation such as sqlite3 suffices, although we can potentially switch to something with a little more power such as PostgreSql if necessary. Data will be stored on the server on a separate, backed up volume for resilience. There will be no replication or sharding of data at this early stage.
-
-We ruled out storage-as-a-service services such as Firestore and the like in order to showcase building a standalone backend for educational purposes.
+We'll use a non-relational database (schema follows) like Mongodb.
 
 ## Schema:
 
 We'll need at least the following entities to implement the service:
 
 Users:
-
 {
 ID: STRING,
 Username: STRING,
@@ -26,7 +23,6 @@ UpdateAt: Timestamp
 }
 
 Posts:
-
 {
 ID: STRING,
 Title: STRING,
@@ -37,9 +33,8 @@ UpdateAt: Timestamp
 }
 
 Likes:
-
 {
-UserId: STRING
+UserId: STRING,
 PostId: STRING
 }
 
@@ -58,7 +53,7 @@ A simple HTTP server is responsible for authentication, serving stored data, and
 
 Node.js is selected for implementing the server for speed of development.
 Express.js is the web server framework.
-Sequelize to be used as an ORM.
+Mongoose to be used as an ODM.
 
 ## Auth
 

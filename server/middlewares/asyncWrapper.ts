@@ -1,11 +1,15 @@
-import { Request, Response, NextFunction, RequestHandler } from "express";
+import { RequestHandler } from "express";
 
-export const asyncWrapper =
-  (fn: RequestHandler) =>
-  async (req: Request, res: Response, next: NextFunction) => {
+export function asyncWrapper<Handler extends RequestHandler = RequestHandler>(
+  fn: Handler
+): Handler {
+  const asyncFn: RequestHandler = async (req, res, next) => {
     try {
       await fn(req, res, next);
     } catch (error) {
       next(error);
     }
   };
+
+  return asyncFn as Handler;
+}
