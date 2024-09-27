@@ -1,5 +1,4 @@
-import express from "express";
-
+import express, { Router } from "express";
 import {
   getAllUsers,
   getUser,
@@ -7,7 +6,7 @@ import {
   signin,
 } from "../controllers/user.controllers";
 
-const userRouter = express.Router();
+const userRouter: Router = express.Router();
 
 userRouter.get("/", getAllUsers);
 userRouter.get("/:username", getUser);

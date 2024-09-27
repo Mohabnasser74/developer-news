@@ -39,13 +39,14 @@ PostId: STRING
 }
 
 Comments:
-
-Column Type
-ID STRING
-UserId STRING/UUID
-PostId STRING
-Comment STRING
-PostedAt Timestamp
+{
+ID: STRING
+UserID: STRING,
+PostID: STRING,
+Comment: STRING,
+CreateAt: Timestamp,
+UpdateAt: Timestamp
+}
 
 ## Server
 
@@ -62,23 +63,22 @@ For v1, a simple JWT-based auth mechanism is to be used, with passwords encrypte
 ## API
 
 Auth:
-/users/signIn [POST]
-/users/signUp [POST]
+/users/signIn [POST] -
+/users/signUp [POST] -
 /users/signOut [POST]
 
 Posts:
-/posts/list [GET]
-/posts/new [POST]
-/posts/:id [GET]
-/posts/:id [DELETE]
+/posts [GET] -
+/posts/new [POST] -
+/posts/:id [GET] - [PUT] - [DELETE]
 
 Likes:
 /likes/new [POST]
 
 Comments:
-/comments/new [POST]
-/comments/list [GET]
-/comments/:id [DELETE]
+/comments [GET] -
+/comments/new [POST] -
+/comments/:id [GET] - [PUT] - [DELETE]
 
 ## Clients
 

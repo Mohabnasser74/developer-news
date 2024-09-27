@@ -1,3 +1,4 @@
+import { Schema } from "mongoose";
 import { RequestHandler } from "express";
 
 export interface User {
@@ -9,24 +10,26 @@ export interface User {
 export interface Post {
   title: string;
   url: string;
-  userID: string;
-  postedAt: number;
+  userID: Schema.Types.ObjectId;
 }
 
 export interface Like {
-  userID: string;
-  postID: string;
+  userID: Schema.Types.ObjectId;
+  postID: Schema.Types.ObjectId;
 }
 
 export interface Comment {
-  userID: string;
-  postID: string;
+  userID: Schema.Types.ObjectId;
+  postID: Schema.Types.ObjectId;
   content: string;
-  postedAt: number;
 }
 
-export type ExpressHandler<Req, Res, Params = any> = RequestHandler<
-  Partial<Params>,
+export interface ParamsDictionary {
+  [key: string]: string;
+}
+
+export type ExpressHandler<Req, Res, P = ParamsDictionary> = RequestHandler<
+  Partial<P>,
   Res,
   Partial<Req>,
   any

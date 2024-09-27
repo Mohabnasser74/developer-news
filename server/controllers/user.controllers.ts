@@ -1,10 +1,8 @@
-import { MongoDBDatastore } from "../dataStore/mongoDB";
+import { db } from "../index";
 import { ExpressHandler, ApiResponse, User } from "../types";
 import { asyncWrapper } from "../middlewares/asyncWrapper";
 
-const db = new MongoDBDatastore();
-
-export const getUser = asyncWrapper<
+const getUser = asyncWrapper<
   ExpressHandler<{}, ApiResponse<User>, { username: string }>
 >(async (req, res, next) => {
   const username = req.params.username;
@@ -25,14 +23,14 @@ export const getUser = asyncWrapper<
   res.status(result.status).json(result);
 });
 
-export const getAllUsers = asyncWrapper<ExpressHandler<{}, ApiResponse>>(
+const getAllUsers = asyncWrapper<ExpressHandler<{}, ApiResponse>>(
   async (req, res, next) => {
     const result = await db.getAllUsers();
     res.status(result.status).json(result);
   }
 );
 
-export const signup = asyncWrapper<ExpressHandler<User, ApiResponse<User>>>(
+const signup = asyncWrapper<ExpressHandler<User, ApiResponse<User>>>(
   async (req, res, next) => {
     const user = req.body;
 
@@ -58,25 +56,27 @@ export const signup = asyncWrapper<ExpressHandler<User, ApiResponse<User>>>(
   }
 );
 
-type CreateUserRequest = Pick<User, "username" | "password">;
+type UserReqBody = Pick<User, "username" | "password">;
 
-export const signin = asyncWrapper<
-  ExpressHandler<CreateUserRequest, ApiResponse>
->(async (req, res, next) => {
-  const user = req.body;
+const signin = asyncWrapper<ExpressHandler<UserReqBody, ApiResponse>>(
+  async (req, res, next) => {
+    const user = req.body;
 
-  if (!user.username || !user.password) {
-    return next({
-      status: 400,
-      message: "Username and password are required",
-      data: null,
-    });
+    if (!user.username || !user.password) {
+      return next({
+        status: 400,
+        message: "Username and password are required",
+        data: null,
+      });
+    }
+
+    const result = await db.signin(user.username, user.password);
+
+    if (result.status === 400 || result.status === 404) {
+      return next(result);
+    }
+    res.status(result.status).json(result);
   }
+);
 
-  const result = await db.signin(user.username, user.password);
-
-  if (result.status === 400 || result.status === 404) {
-    return next(result);
-  }
-  res.status(result.status).json(result);
-});
+export { getUser, getAllUsers, signup, signin };

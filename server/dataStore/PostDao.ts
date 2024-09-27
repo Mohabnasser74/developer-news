@@ -1,9 +1,12 @@
-import { Post } from "../types";
+import { ApiResponse, Post } from "../types";
 
 export interface PostDao {
-  createPost: (post: Post) => Promise<void>;
-  getPost: (id: string) => Promise<Post | void>;
-  getAllPosts: () => Promise<Post[]>;
-  updatePost: (post: Post) => Promise<void>;
-  deletePost: (id: string) => Promise<void>;
+  getPost: (id: string) => Promise<ApiResponse<Post> | void>;
+  createPost: (post: Post) => Promise<ApiResponse<Post> | void>;
+  getAllPosts: (userID: string) => Promise<ApiResponse<Post[]> | void>;
+  updatePost: (
+    id: string,
+    post: Omit<Post, "userID">
+  ) => Promise<ApiResponse<Post> | void>;
+  deletePost: (id: string) => Promise<ApiResponse | void>;
 }
