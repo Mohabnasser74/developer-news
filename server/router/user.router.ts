@@ -1,16 +1,19 @@
-import express, { Router } from "express";
+import express from "express";
 import {
   getAllUsers,
   getUser,
-  signup,
-  signin,
-} from "../controllers/user.controllers";
+  signUp,
+  signIn,
+  signOut,
+} from "../controllers/users.controller";
+import { isAuth } from "../middlewares/isAuth";
 
-const userRouter: Router = express.Router();
+const userRouter = express.Router();
 
-userRouter.get("/", getAllUsers);
+userRouter.get("/", isAuth, getAllUsers);
 userRouter.get("/:username", getUser);
-userRouter.post("/signup", signup);
-userRouter.post("/signin", signin);
+userRouter.post("/signUp", signUp);
+userRouter.post("/signIn", signIn);
+userRouter.post("/signOut", isAuth, signOut);
 
 export default userRouter;

@@ -1,5 +1,7 @@
-import { Schema } from "mongoose";
+import { Schema, Types } from "mongoose";
 import { RequestHandler } from "express";
+
+type ID = string | Types.ObjectId;
 
 export interface User {
   username: string;
@@ -10,17 +12,17 @@ export interface User {
 export interface Post {
   title: string;
   url: string;
-  userID: Schema.Types.ObjectId;
+  userID: ID;
 }
 
 export interface Like {
-  userID: Schema.Types.ObjectId;
-  postID: Schema.Types.ObjectId;
+  userID: ID;
+  postID: ID;
 }
 
 export interface Comment {
-  userID: Schema.Types.ObjectId;
-  postID: Schema.Types.ObjectId;
+  userID: ID;
+  postID: ID;
   content: string;
 }
 
@@ -40,4 +42,13 @@ export interface ApiResponse<Data = Record<string, any> | null> {
   status: number;
   message: string;
   data: Data | null;
+}
+
+export interface JwtObject {
+  email: string;
+  useID: ID;
+}
+
+export interface DBError {
+  message: string;
 }

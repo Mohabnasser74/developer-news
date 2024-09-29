@@ -1,16 +1,21 @@
 import express from "express";
 import {
-  getAllPosts,
+  getUserPosts,
   getPost,
   createPost,
   updatePost,
   deletePost,
-} from "../controllers/posts.controllers";
+} from "../controllers/posts.controller";
+import { isAuth } from "../middlewares/isAuth";
 
 const postRouter = express.Router();
 
-postRouter.get("/:userID", getAllPosts);
-postRouter.post("/new", createPost);
-postRouter.route("/:id").get(getPost).put(updatePost).delete(deletePost); // userID?
+postRouter.get("/:userID", getUserPosts);
+postRouter.post("/new", isAuth, createPost);
+postRouter
+  .route("/:id")
+  .get(getPost)
+  .put(isAuth, updatePost)
+  .delete(isAuth, deletePost);
 
 export default postRouter;

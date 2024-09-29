@@ -1,12 +1,8 @@
-import { User, ApiResponse } from "../types";
+import { User, ApiResponse, DBError } from "../types";
 
 export interface UserDao {
-  signup: (user: User) => Promise<ApiResponse<User> | void>;
-  signin: (
-    username: string,
-    password: string
-  ) => Promise<ApiResponse<User> | void>;
-  logout: (username: string) => Promise<void>;
-  getUser: (username: string) => Promise<ApiResponse<User> | void>;
-  getAllUsers: () => Promise<ApiResponse<User[]> | void>;
+  createUser: (user: User) => Promise<User>;
+  getUserByEmail: (email: string) => Promise<User | null>;
+  getUserByUsername: (username: string) => Promise<User | null>;
+  getAllUsers: () => Promise<User[] | null>;
 }
