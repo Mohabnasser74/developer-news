@@ -69,16 +69,13 @@ Auth:
 
 Posts:
 /posts [GET] -
-/posts/new [POST] -
-/posts/:id [GET] - [PUT] - [DELETE]
+/posts/:id [POST] - [GET] - [PUT] - [DELETE]
 
 Likes:
-/likes/new [POST]
+/likes/:id [POST]
 
 Comments:
-/comments [GET] -
-/comments/new [POST] -
-/comments/:id [GET] - [PUT] - [DELETE]
+/comments/:id [POST] - [GET] - [PUT] - [DELETE]
 
 ## Clients
 

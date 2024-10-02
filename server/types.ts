@@ -1,7 +1,7 @@
 import { Schema, Types } from "mongoose";
 import { RequestHandler } from "express";
 
-type ID = string | Types.ObjectId;
+export type ID = string | Types.ObjectId;
 
 export interface User {
   username: string;
@@ -46,9 +46,9 @@ export interface ApiResponse<Data = Record<string, any> | null> {
 
 export interface JwtObject {
   email: string;
-  useID: ID;
+  userID: ID;
 }
 
-export interface DBError {
-  message: string;
-}
+export type ParamsID = {
+  id: string;
+};

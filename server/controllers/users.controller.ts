@@ -75,7 +75,7 @@ const signUp = asyncWrapper<ExpressHandler<User, ApiResponse<User>>>(
 
     const token = signJwt({
       email: newUser.email,
-      useID: newUser._id,
+      userID: newUser._id,
     });
 
     res.cookie("token", token, {
@@ -127,7 +127,7 @@ const signIn = asyncWrapper<ExpressHandler<UserReqBody, ApiResponse<User>>>(
 
     const token = signJwt({
       email: existing.email,
-      useID: existing._id,
+      userID: existing._id,
     });
 
     res.cookie("token", token, {

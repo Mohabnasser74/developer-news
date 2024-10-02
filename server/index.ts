@@ -1,49 +1,43 @@
-import express, { ErrorRequestHandler } from "express";
+import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import { MongoDBDatastore } from "./dataStore/mongoDB/index.js";
+
+import userRouter from "./router/user.router.js";
+import postRouter from "./router/post.router.js";
+import likeRouter from "./router/post.router.js";
+import { globalError } from "./middlewares/globalError.js";
+
 dotenv.config();
 
-import UR from "./router/user.router";
-import PR from "./router/post.router";
-import { ApiResponse } from "./types";
-import { MongoDBDatastore } from "./dataStore/mongoDB";
-
 const app = express();
+export const db = new MongoDBDatastore();
 
 app.use(express.json());
-
-app.use("/users", UR);
-app.use("/posts", PR);
-
-const globalError: ErrorRequestHandler<any, ApiResponse> = (
-  error,
-  req,
-  res,
-  next
-) => {
-  const statusCode = error.statusCode || 500;
-  res.status(statusCode).json({
-    status: statusCode,
-    message: error.message,
-    data: null,
-  });
-};
-
+app.use(cookieParser());
+app.use("/users", userRouter);
+app.use("/posts", postRouter);
+app.use("/likes", likeRouter);
 app.use(globalError);
-
-export const db = new MongoDBDatastore();
 
 const uri: string | undefined = process.env.URI_CONNECTION;
 const port: string | undefined = process.env.PORT;
 
 async function main() {
-  if (uri) {
-    await mongoose.connect(uri);
-    console.log("DB IS RUNNING");
-  } else {
+  if (!uri) {
     console.log("URI CONNECTION NOT FOUND");
     process.exit(1);
   }
+
+  if (!port) {
+    console.log("PORT NOT FOUND");
+    process.exit(1);
+  }
+
+  await mongoose.connect(uri);
+  console.log("DB IS RUNNING");
+
   app.listen(port, () => {
     console.log(`APP IS LISTENING TO PORT: ${port}`);
   });

@@ -1,35 +1,35 @@
 import { db } from "../index";
 import { asyncWrapper } from "../middlewares/asyncWrapper";
-import { ApiResponse, ExpressHandler, Post } from "../types";
+import { ApiResponse, ExpressHandler, ParamsID, Post } from "../types";
 import { verifyJwt } from "../auth";
 
-const getPost = asyncWrapper<
-  ExpressHandler<{}, ApiResponse<Post>, { id: string }>
->(async (req, res, next) => {
-  const params = req.params;
+const getPost = asyncWrapper<ExpressHandler<{}, ApiResponse<Post>, ParamsID>>(
+  async (req, res, next) => {
+    const params = req.params;
 
-  if (!params.id) {
-    return next(
-      res.json({ status: 400, message: "Missing id parameter", data: null })
-    );
-  }
+    if (!params.id) {
+      return next(
+        res.json({ status: 400, message: "Missing id parameter", data: null })
+      );
+    }
 
-  const post = await db.getPostById(params.id);
+    const post = await db.getPostById(params.id);
 
-  if (!post) {
-    return next({
-      status: 404,
-      message: "Post not found",
-      data: null,
+    if (!post) {
+      return next({
+        status: 404,
+        message: "Post not found",
+        data: null,
+      });
+    }
+
+    res.status(200).json({
+      status: 200,
+      message: "Post retrieved successfully",
+      data: post,
     });
   }
-
-  res.status(200).json({
-    status: 200,
-    message: "Post retrieved successfully",
-    data: post,
-  });
-});
+);
 
 const getUserPosts = asyncWrapper<
   ExpressHandler<{}, ApiResponse<Post[]>, { userID: string }>
@@ -64,7 +64,7 @@ const createPost = asyncWrapper<ExpressHandler<PostRedBody, ApiResponse<Post>>>(
     }
 
     if (req.user) {
-      const post = await db.createPost({ title, url, userID: req.user.useID });
+      const post = await db.createPost({ title, url, userID: req.user.userID });
 
       res.status(200).json({
         status: 200,
@@ -76,7 +76,7 @@ const createPost = asyncWrapper<ExpressHandler<PostRedBody, ApiResponse<Post>>>(
 );
 
 const updatePost = asyncWrapper<
-  ExpressHandler<PostRedBody, ApiResponse, { id: string }>
+  ExpressHandler<PostRedBody, ApiResponse, ParamsID>
 >(async (req, res, next) => {
   const postID = req.params.id;
 
@@ -106,25 +106,25 @@ const updatePost = asyncWrapper<
   });
 });
 
-const deletePost = asyncWrapper<
-  ExpressHandler<{}, ApiResponse, { id: string }>
->(async (req, res, next) => {
-  const postID = req.params.id;
+const deletePost = asyncWrapper<ExpressHandler<{}, ApiResponse, ParamsID>>(
+  async (req, res, next) => {
+    const postID = req.params.id;
 
-  if (!postID) {
-    return next({
-      status: 400,
-      message: "Missing post id parameter",
+    if (!postID) {
+      return next({
+        status: 400,
+        message: "Missing post id parameter",
+        data: null,
+      });
+    }
+
+    await db.deletePost(postID);
+    res.status(200).json({
+      status: 200,
+      message: "Post deleted successfully",
       data: null,
     });
   }
-
-  await db.deletePost(postID);
-  res.status(200).json({
-    status: 200,
-    message: "Post deleted successfully",
-    data: null,
-  });
-});
+);
 
 export { getPost, createPost, getUserPosts, updatePost, deletePost };

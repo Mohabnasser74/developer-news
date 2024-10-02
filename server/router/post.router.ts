@@ -10,8 +10,8 @@ import { isAuth } from "../middlewares/isAuth";
 
 const postRouter = express.Router();
 
-postRouter.get("/:userID", getUserPosts);
 postRouter.post("/new", isAuth, createPost);
+postRouter.get("/:userID", getUserPosts);
 postRouter
   .route("/:id")
   .get(getPost)

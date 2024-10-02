@@ -1,4 +1,4 @@
-import { ApiResponse, Post } from "../types";
+import { Post } from "../types";
 
 export interface PostDao {
   getPostById: (id: string) => Promise<Post | null>;

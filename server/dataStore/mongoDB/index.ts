@@ -3,6 +3,8 @@ import { User, Post, Like, Comment } from "../../types";
 import { UserModel } from "../../models/user.model";
 import bcrypt from "bcryptjs";
 import { PostModel } from "../../models/post.model";
+import { LikeModel } from "../../models/like.model";
+import { CommentModel } from "../../models/comment.model";
 
 export class MongoDBDatastore implements Datastore {
   async createUser(user: User) {
@@ -62,11 +64,34 @@ export class MongoDBDatastore implements Datastore {
     return null;
   }
 
-  createLike!: (like: Like) => Promise<void>;
+  async createLike(like: Like) {
+    await new LikeModel(like).save();
+  }
 
-  createComment!: (comment: Comment) => Promise<void>;
-  getComment!: (id: string) => Promise<Comment | undefined>;
-  getComments!: (postID: string) => Promise<Comment[]>;
-  updateComment!: (comment: Comment) => Promise<void>;
-  deleteComment!: (id: string) => Promise<void>;
+  async createComment(comment: Comment) {
+    const newComment = await new CommentModel(comment).save();
+    return newComment;
+  }
+
+  async getPostComments(postID: string) {
+    const comments = await CommentModel.find({ postID }, { userID: 0 });
+    return comments;
+  }
+
+  async updateCommentById(id: string, content: string) {
+    const updatedComment = await CommentModel.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          content,
+        },
+      },
+      { new: true }
+    );
+    return updatedComment;
+  }
+
+  async deleteComment(id: string) {
+    await CommentModel.findByIdAndDelete(id);
+  }
 }

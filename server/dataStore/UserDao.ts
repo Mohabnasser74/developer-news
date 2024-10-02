@@ -1,4 +1,4 @@
-import { User, ApiResponse, DBError } from "../types";
+import { User } from "../types";
 
 export interface UserDao {
   createUser: (user: User) => Promise<User>;
