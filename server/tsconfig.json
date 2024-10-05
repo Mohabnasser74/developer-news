@@ -1,18 +1,20 @@
 {
   "compilerOptions": {
     "target": "ES6",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
     "resolveJsonModule": true,
-    "isolatedModules": true
-  },
-  "ts-node": {
-    "esm": true
-  },
-  "include": ["**/*.ts"],
-  "exclude": ["node_modules"]
+    "isolatedModules": true,
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "jsx": "react-jsx"
+  }
 }

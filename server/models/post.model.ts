@@ -1,4 +1,4 @@
-import mongoose, { Schema, Model, Types } from "mongoose";
+import mongoose, { Schema, Model } from "mongoose";
 import { Post } from "../types";
 
 const postSchema = new Schema<Post>(

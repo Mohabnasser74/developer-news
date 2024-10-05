@@ -1,10 +1,7 @@
 import { db } from "..";
 import { asyncWrapper } from "../middlewares/asyncWrapper";
-import { ApiResponse, ExpressHandler, Comment, ParamsID } from "../types";
-
-type CreateCommentRequest = {
-  content: string;
-};
+import { ExpressHandler, Comment } from "../types";
+import { ApiResponse, CreateCommentRequest, ParamsID } from "../api";
 
 const createComment = asyncWrapper<
   ExpressHandler<
@@ -77,10 +74,8 @@ const getPostComments = asyncWrapper<
   });
 });
 
-type CreateRedBody = Omit<Comment, "userID" | "postID">;
-
 const updateComment = asyncWrapper<
-  ExpressHandler<CreateRedBody, ApiResponse, ParamsID>
+  ExpressHandler<CreateCommentRequest, ApiResponse, ParamsID>
 >(async (req, res, next) => {
   const commentID = req.params.id;
   const { content } = req.body;
@@ -101,7 +96,17 @@ const updateComment = asyncWrapper<
     });
   }
 
-  await db.updateCommentById(commentID, content);
+  const newComment = await db.updateCommentById(commentID, {
+    content,
+  });
+
+  if (!newComment) {
+    return next({
+      status: 404,
+      message: "Comment not found",
+      data: null,
+    });
+  }
 
   res.status(200).json({
     status: 200,
@@ -122,7 +127,15 @@ const deleteComment = asyncWrapper<ExpressHandler<{}, ApiResponse, ParamsID>>(
       });
     }
 
-    await db.deleteComment(commentID);
+    const deleted = await db.deleteComment(commentID);
+
+    if (!deleted) {
+      return next({
+        status: 404,
+        message: "Comment not found",
+        data: null,
+      });
+    }
 
     res.status(200).json({
       status: 200,

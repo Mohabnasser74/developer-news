@@ -1,19 +1,19 @@
 import { db } from "../index";
 import { asyncWrapper } from "../middlewares/asyncWrapper";
-import { ApiResponse, ExpressHandler, ParamsID, Post } from "../types";
-import { verifyJwt } from "../auth";
+import { ExpressHandler, Post } from "../types";
+import { ApiResponse, CreatePostRequest, ParamsID } from "../api";
 
 const getPost = asyncWrapper<ExpressHandler<{}, ApiResponse<Post>, ParamsID>>(
   async (req, res, next) => {
-    const params = req.params;
+    const postID = req.params.id;
 
-    if (!params.id) {
+    if (!postID) {
       return next(
         res.json({ status: 400, message: "Missing id parameter", data: null })
       );
     }
 
-    const post = await db.getPostById(params.id);
+    const post = await db.getPostById(postID);
 
     if (!post) {
       return next({
@@ -32,19 +32,27 @@ const getPost = asyncWrapper<ExpressHandler<{}, ApiResponse<Post>, ParamsID>>(
 );
 
 const getUserPosts = asyncWrapper<
-  ExpressHandler<{}, ApiResponse<Post[]>, { userID: string }>
+  ExpressHandler<{}, ApiResponse<Post[]>, { username: string; userID: string }>
 >(async (req, res, next) => {
   const { userID } = req.params;
 
   if (!userID) {
     return next({
       status: 400,
-      message: "Missing user ID parameter",
+      message: "Missing username or userID parameter",
       data: null,
     });
   }
 
   const posts = await db.getUserPosts(userID);
+
+  if (!posts) {
+    return next({
+      status: 404,
+      message: "Posts not found",
+      data: null,
+    });
+  }
 
   res.status(200).json({
     status: 200,
@@ -53,31 +61,34 @@ const getUserPosts = asyncWrapper<
   });
 });
 
-type PostRedBody = Omit<Post, "userID">;
+const createPost = asyncWrapper<
+  ExpressHandler<CreatePostRequest, ApiResponse<Post>>
+>(async (req, res, next) => {
+  const { title, url } = req.body;
 
-const createPost = asyncWrapper<ExpressHandler<PostRedBody, ApiResponse<Post>>>(
-  async (req, res, next) => {
-    const { title, url } = req.body;
-
-    if (!title || !url) {
-      return next({ status: 400, message: "Missing title or url", data: null });
-    }
-
-    if (req.user) {
-      const post = await db.createPost({ title, url, userID: req.user.userID });
-
-      res.status(200).json({
-        status: 200,
-        message: "Post created successfully",
-        data: post,
-      });
-    }
+  if (!title || !url) {
+    return next({ status: 400, message: "Missing title or url", data: null });
   }
-);
+
+  if (req.user) {
+    const post = await db.createPost({
+      title,
+      url,
+      userID: req.user.userID,
+    });
+
+    res.status(200).json({
+      status: 200,
+      message: "Post created successfully",
+      data: post,
+    });
+  }
+});
 
 const updatePost = asyncWrapper<
-  ExpressHandler<PostRedBody, ApiResponse, ParamsID>
+  ExpressHandler<CreatePostRequest, ApiResponse, ParamsID>
 >(async (req, res, next) => {
+  const body = req.body;
   const postID = req.params.id;
 
   if (!postID) {
@@ -88,22 +99,18 @@ const updatePost = asyncWrapper<
     });
   }
 
-  const { title, url } = req.body;
+  if (req.user) {
+    const post = await db.updatePostById(postID, {
+      title: body.title,
+      url: body.url,
+    });
 
-  if (!title || !url) {
-    return next({ status: 400, error: "Missing title or url", data: null });
+    res.status(200).json({
+      status: 200,
+      message: "Post updated successfully",
+      data: post,
+    });
   }
-
-  const post = await db.updatePostById(postID, {
-    title,
-    url,
-  });
-
-  res.status(200).json({
-    status: 200,
-    message: "Post updated successfully",
-    data: post,
-  });
 });
 
 const deletePost = asyncWrapper<ExpressHandler<{}, ApiResponse, ParamsID>>(

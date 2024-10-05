@@ -2,12 +2,14 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-import { MongoDBDatastore } from "./dataStore/mongoDB/index.js";
+import { MongoDBDatastore } from "./dataStore/mongoDB/index";
 
-import userRouter from "./router/user.router.js";
-import postRouter from "./router/post.router.js";
-import likeRouter from "./router/post.router.js";
-import { globalError } from "./middlewares/globalError.js";
+import userRouter from "./router/user.router";
+import postRouter from "./router/post.router";
+import likeRouter from "./router/like.router";
+import { globalError } from "./middlewares/globalError";
+import { notFoundRoute } from "./middlewares/notFoundRoute";
+import commentRouter from "./router/comment.router";
 
 dotenv.config();
 
@@ -16,9 +18,13 @@ export const db = new MongoDBDatastore();
 
 app.use(express.json());
 app.use(cookieParser());
+
 app.use("/users", userRouter);
 app.use("/posts", postRouter);
 app.use("/likes", likeRouter);
+app.use("/comments", commentRouter);
+
+app.use("*", notFoundRoute);
 app.use(globalError);
 
 const uri: string | undefined = process.env.URI_CONNECTION;

@@ -1,31 +1,43 @@
 import { db } from "..";
+import { ApiResponse } from "../api";
 import { asyncWrapper } from "../middlewares/asyncWrapper";
-import { ApiResponse, ExpressHandler, Like } from "../types";
+import { ExpressHandler } from "../types";
 
 const createLike = asyncWrapper<
   ExpressHandler<{}, ApiResponse, { postID: string }>
 >(async (req, res, next) => {
   const postID = req.params.postID;
-  const userID = req.user?.userID;
 
-  if (!postID || !userID) {
-    return next({
-      status: 400,
-      message: "Post ID and User ID are required.",
+  if (req.user) {
+    const userID = req.user.userID;
+
+    if (!postID) {
+      return next({
+        status: 400,
+        message: "Post ID required.",
+        data: null,
+      });
+    }
+
+    const liked = await db.createLike({
+      postID,
+      userID,
+    });
+
+    if (!liked) {
+      return next({
+        status: 400,
+        message: "Failed to create like.",
+        data: null,
+      });
+    }
+
+    res.status(201).json({
+      status: 201,
+      message: "Like created successfully.",
       data: null,
     });
   }
-
-  await db.createLike({
-    postID,
-    userID,
-  });
-
-  res.status(201).json({
-    status: 201,
-    message: "Like created successfully.",
-    data: null,
-  });
 });
 
 export { createLike };

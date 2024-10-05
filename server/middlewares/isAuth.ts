@@ -1,5 +1,6 @@
-import { ApiResponse, ExpressHandler, JwtObject } from "../types";
+import { ExpressHandler, JwtObject } from "../types";
 import { verifyJwt } from "../auth";
+import { ApiResponse } from "../api";
 
 declare module "express-serve-static-core" {
   interface Request {

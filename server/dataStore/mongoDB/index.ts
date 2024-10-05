@@ -5,6 +5,8 @@ import bcrypt from "bcryptjs";
 import { PostModel } from "../../models/post.model";
 import { LikeModel } from "../../models/like.model";
 import { CommentModel } from "../../models/comment.model";
+import { CreateCommentRequest, CreatePostRequest } from "../../api";
+import { isValidObjectId } from "mongoose";
 
 export class MongoDBDatastore implements Datastore {
   async createUser(user: User) {
@@ -30,13 +32,19 @@ export class MongoDBDatastore implements Datastore {
   }
 
   async getPostById(id: string) {
-    const post = await PostModel.findById(id, { userID: 0 });
-    return post;
+    if (isValidObjectId(id)) {
+      const post = await PostModel.findById(id, { userID: 0 });
+      return post;
+    }
+    return null;
   }
 
   async getUserPosts(userID: string) {
-    const posts = await PostModel.find({ userID });
-    return posts;
+    if (isValidObjectId(userID)) {
+      const posts = await PostModel.find({ userID });
+      return posts;
+    }
+    return null;
   }
 
   async createPost(post: Post) {
@@ -44,19 +52,24 @@ export class MongoDBDatastore implements Datastore {
     return newPost;
   }
 
-  async updatePostById(id: string, post: Omit<Post, "userID">) {
-    const updatedPost = await PostModel.findByIdAndUpdate(
-      id,
-      {
-        $set: {
-          title: post.title,
-          url: post.url,
-        },
-      },
-      { new: true }
-    );
+  async updatePostById(id: string, post: CreatePostRequest) {
+    if (isValidObjectId(id)) {
+      const updatePart: typeof post = {};
 
-    return updatedPost;
+      post.title ? (updatePart.title = post.title) : null;
+      post.url ? (updatePart.url = post.url) : null;
+
+      const updatedPost = await PostModel.findByIdAndUpdate(
+        id,
+        {
+          $set: updatePart,
+        },
+        { new: true }
+      );
+
+      return updatedPost;
+    }
+    return null;
   }
 
   async deletePost(id: string) {
@@ -65,7 +78,12 @@ export class MongoDBDatastore implements Datastore {
   }
 
   async createLike(like: Like) {
-    await new LikeModel(like).save();
+    const existing = LikeModel.findOne({ userID: like.userID });
+    if (!existing) {
+      const newLike = await new LikeModel(like).save();
+      return newLike;
+    }
+    return null;
   }
 
   async createComment(comment: Comment) {
@@ -74,16 +92,16 @@ export class MongoDBDatastore implements Datastore {
   }
 
   async getPostComments(postID: string) {
-    const comments = await CommentModel.find({ postID }, { userID: 0 });
+    const comments = await CommentModel.find({ postID });
     return comments;
   }
 
-  async updateCommentById(id: string, content: string) {
+  async updateCommentById(id: string, comment: CreateCommentRequest) {
     const updatedComment = await CommentModel.findByIdAndUpdate(
       id,
       {
         $set: {
-          content,
+          content: comment.content,
         },
       },
       { new: true }
@@ -92,6 +110,7 @@ export class MongoDBDatastore implements Datastore {
   }
 
   async deleteComment(id: string) {
-    await CommentModel.findByIdAndDelete(id);
+    const deleted = await CommentModel.findByIdAndDelete(id);
+    return deleted;
   }
 }

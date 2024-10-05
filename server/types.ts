@@ -1,4 +1,4 @@
-import { Schema, Types } from "mongoose";
+import { Types } from "mongoose";
 import { RequestHandler } from "express";
 
 export type ID = string | Types.ObjectId;
@@ -37,18 +37,8 @@ export type ExpressHandler<Req, Res, P = ParamsDictionary> = RequestHandler<
   any
 >;
 
-export interface ApiResponse<Data = Record<string, any> | null> {
-  text?: string;
-  status: number;
-  message: string;
-  data: Data | null;
-}
-
 export interface JwtObject {
+  username: string;
   email: string;
   userID: ID;
 }
-
-export type ParamsID = {
-  id: string;
-};
