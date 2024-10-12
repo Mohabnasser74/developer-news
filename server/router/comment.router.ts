@@ -9,10 +9,8 @@ import { isAuth } from "../middlewares/isAuth";
 
 const commentRouter = express.Router();
 
-commentRouter
-  .route("/:postID")
-  .post(isAuth, createComment)
-  .get(getPostComments);
+commentRouter.post("/new/:postID", isAuth, createComment);
+commentRouter.get("/list/:postID", getPostComments);
 commentRouter
   .route("/:id")
   .put(isAuth, updateComment)

@@ -32,7 +32,7 @@ const getPost = asyncWrapper<ExpressHandler<{}, ApiResponse<Post>, ParamsID>>(
 );
 
 const getUserPosts = asyncWrapper<
-  ExpressHandler<{}, ApiResponse<Post[]>, { username: string; userID: string }>
+  ExpressHandler<{}, ApiResponse<Post[]>, { userID: string }>
 >(async (req, res, next) => {
   const { userID } = req.params;
 
@@ -77,6 +77,10 @@ const createPost = asyncWrapper<
       userID: req.user.userID,
     });
 
+    if (!post) {
+      return next({ status: 400, message: "Invalid user id", data: null });
+    }
+
     res.status(200).json({
       status: 200,
       message: "Post created successfully",
@@ -100,15 +104,19 @@ const updatePost = asyncWrapper<
   }
 
   if (req.user) {
-    const post = await db.updatePostById(postID, {
+    const uPost = await db.updatePostById(postID, {
       title: body.title,
       url: body.url,
     });
 
+    if (!uPost) {
+      return next({ status: 404, message: "Post not found", data: null });
+    }
+
     res.status(200).json({
       status: 200,
       message: "Post updated successfully",
-      data: post,
+      data: uPost,
     });
   }
 });
@@ -125,7 +133,12 @@ const deletePost = asyncWrapper<ExpressHandler<{}, ApiResponse, ParamsID>>(
       });
     }
 
-    await db.deletePost(postID);
+    const dPost = await db.deletePost(postID);
+
+    if (!dPost) {
+      return next({ status: 404, message: "Post not found", data: null });
+    }
+
     res.status(200).json({
       status: 200,
       message: "Post deleted successfully",

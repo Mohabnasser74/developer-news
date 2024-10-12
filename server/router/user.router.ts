@@ -1,7 +1,6 @@
 import express from "express";
 import {
-  getAllUsers,
-  getUser,
+  getUserById,
   signUp,
   signIn,
   signOut,
@@ -10,10 +9,9 @@ import { isAuth } from "../middlewares/isAuth";
 
 const userRouter = express.Router();
 
-userRouter.get("/", isAuth, getAllUsers);
-userRouter.get("/:username", getUser);
 userRouter.post("/signUp", signUp);
 userRouter.post("/signIn", signIn);
 userRouter.post("/signOut", isAuth, signOut);
+userRouter.get("/:userID", getUserById);
 
 export default userRouter;

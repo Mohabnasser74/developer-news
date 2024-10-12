@@ -5,20 +5,24 @@ import bcrypt from "bcryptjs";
 import { signJwt } from "../auth";
 import { ApiResponse, CreateUserRequest } from "../api";
 
-const getUser = asyncWrapper<
-  ExpressHandler<{}, ApiResponse<User>, { username: string }>
+const getUserById = asyncWrapper<
+  ExpressHandler<{}, ApiResponse<User>, { userID: string }>
 >(async (req, res, next) => {
-  const { username } = req.params;
+  const { userID } = req.params;
 
-  if (!username) {
+  if (!userID) {
     return next({
       status: 400,
-      message: "Username is required",
+      message: "userID is required",
       data: null,
     });
   }
 
-  const user = await db.getUserByUsername(username);
+  const user = await db.getUserById(userID, {
+    password: 0,
+    updatedAt: 0,
+    __v: 0,
+  });
 
   if (!user) {
     return next({
@@ -35,17 +39,6 @@ const getUser = asyncWrapper<
   });
 });
 
-const getAllUsers = asyncWrapper<ExpressHandler<{}, ApiResponse<User[]>>>(
-  async (req, res, next) => {
-    const users = await db.getAllUsers();
-    res.status(200).json({
-      status: 200,
-      message: "Users found",
-      data: users,
-    });
-  }
-);
-
 const signUp = asyncWrapper<ExpressHandler<User, ApiResponse<User>>>(
   async (req, res, next) => {
     const user = req.body;
@@ -58,7 +51,11 @@ const signUp = asyncWrapper<ExpressHandler<User, ApiResponse<User>>>(
       });
     }
 
-    const existing = await db.getUserByEmail(user.email);
+    const existing = await db.getUserByEmail(user.email, {
+      password: 0,
+      updatedAt: 0,
+      __v: 0,
+    });
 
     if (existing) {
       return next({
@@ -93,58 +90,58 @@ const signUp = asyncWrapper<ExpressHandler<User, ApiResponse<User>>>(
   }
 );
 
-const signIn = asyncWrapper<
-  ExpressHandler<CreateUserRequest, ApiResponse<User>>
->(async (req, res, next) => {
-  const user = req.body;
+const signIn = asyncWrapper<ExpressHandler<CreateUserRequest>>(
+  async (req, res, next) => {
+    const user = req.body;
 
-  if (!user.email || !user.password) {
-    return next({
-      status: 400,
-      message: "email and password are required",
+    if (!user.email || !user.password) {
+      return next({
+        status: 400,
+        message: "email and password are required",
+        data: null,
+      });
+    }
+
+    const existing = await db.getUserByEmail(user.email);
+
+    if (!existing) {
+      return next({
+        status: 404,
+        message: "We don't have an account with that email address.",
+        data: null,
+      });
+    }
+
+    const isMatch = await bcrypt.compare(user.password, existing.password);
+
+    if (!isMatch) {
+      return next({
+        status: 400,
+        message: "Incorrect password",
+        data: null,
+      });
+    }
+
+    const token = signJwt({
+      username: existing.username,
+      email: existing.email,
+      userID: existing._id,
+    });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      maxAge: 3600000,
+    });
+
+    res.status(200).json({
+      status: 200,
+      message: "User logged in successfully",
       data: null,
     });
   }
+);
 
-  const existing = await db.getUserByEmail(user.email);
-
-  if (!existing) {
-    return next({
-      status: 404,
-      message: "We don't have an account with that email address.",
-      data: null,
-    });
-  }
-
-  const isMatch = await bcrypt.compare(user.password, existing.password);
-
-  if (!isMatch) {
-    return {
-      status: 400,
-      message: "Incorrect password",
-      data: null,
-    };
-  }
-
-  const token = signJwt({
-    username: existing.username,
-    email: existing.email,
-    userID: existing._id,
-  });
-
-  res.cookie("token", token, {
-    httpOnly: true,
-    maxAge: 3600000,
-  });
-
-  res.status(200).json({
-    status: 200,
-    message: "User logged in successfully",
-    data: existing,
-  });
-});
-
-const signOut: ExpressHandler<{}, ApiResponse> = (req, res, next) => {
+const signOut: ExpressHandler<{}> = (req, res, next) => {
   res.clearCookie("token");
   res.status(200).json({
     status: 200,
@@ -153,4 +150,4 @@ const signOut: ExpressHandler<{}, ApiResponse> = (req, res, next) => {
   });
 };
 
-export { getUser, getAllUsers, signUp, signIn, signOut };
+export { getUserById, signUp, signIn, signOut };

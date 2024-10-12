@@ -38,6 +38,14 @@ const createComment = asyncWrapper<
       content,
     });
 
+    if (!comment) {
+      return next({
+        status: 404,
+        message: "Post not found",
+        data: null,
+      });
+    }
+
     res.status(201).json({
       status: 201,
       message: "Comment created successfully",
@@ -66,6 +74,14 @@ const getPostComments = asyncWrapper<
   }
 
   const comments = await db.getPostComments(postID);
+
+  if (!comments) {
+    return next({
+      status: 404,
+      message: "Comments not found",
+      data: null,
+    });
+  }
 
   res.status(200).json({
     status: 200,

@@ -62,20 +62,31 @@ For v1, a simple JWT-based auth mechanism is to be used, with passwords encrypte
 
 ## API
 
-Auth:
-/users/signIn [POST] -
-/users/signUp [POST] -
-/users/signOut [POST]
+Users:
+
+1. [POST] /signUp -> Create a new user.
+2. [POST] /signIn -> Log in the user.
+3. [POST] /signOut -> Log out the user (protected by isAuth).
+4. [GET] /:userID -> Retrieve a specific user.
 
 Posts:
-/posts [GET] -
-/posts/:id [POST] - [GET] - [PUT] - [DELETE]
+
+1. [POST] /new -> Create a new post (protected by isAuth).
+2. [GET] /list/:userID -> Retrieves all posts for a specific user.
+3. [GET] /:id -> Retrieve a specific post.
+4. [PUT] /:id -> Updates a specific post (protected by isAuth).
+5. [DELETE] /:id -> Deletes a specific post (protected by isAuth).
 
 Likes:
-/likes/:id [POST]
+
+1. [POST] /:id -> Create a new like for a specific post (protected by isAuth).
 
 Comments:
-/comments/:id [POST] - [GET] - [PUT] - [DELETE]
+
+1. [POST] /new/:postID -> Creates a new comment for a specific post (protected by isAuth).
+2. [GET] /list/:postID -> Retrieves all comments for a specific post.
+3. [PUT] /:id -> Updates a specific comment (protected by isAuth).
+4. [DELETE] /:id -> Deletes a specific comment (protected by isAuth).
 
 ## Clients
 

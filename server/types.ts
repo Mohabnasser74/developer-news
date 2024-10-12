@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { RequestHandler } from "express";
+import { ApiResponse } from "./api";
 
 export type ID = string | Types.ObjectId;
 
@@ -30,12 +31,11 @@ export interface ParamsDictionary {
   [key: string]: string;
 }
 
-export type ExpressHandler<Req, Res, P = ParamsDictionary> = RequestHandler<
-  Partial<P>,
-  Res,
-  Partial<Req>,
-  any
->;
+export type ExpressHandler<
+  Req,
+  Res = ApiResponse,
+  P = ParamsDictionary
+> = RequestHandler<Partial<P>, Res, Partial<Req>, any>;
 
 export interface JwtObject {
   username: string;
