@@ -9,8 +9,8 @@ import { CreateCommentRequest, CreatePostRequest } from "../../api";
 import { isValidObjectId } from "mongoose";
 
 export class MongoDBDatastore implements Datastore {
-  private validateObjectId(id: ID): boolean {
-    return isValidObjectId(id);
+  private validateObjectId(id: ID, errorMessage: string): void {
+    if (!isValidObjectId(id)) throw new Error(errorMessage);
   }
 
   async createUser(user: User) {
@@ -29,59 +29,54 @@ export class MongoDBDatastore implements Datastore {
   }
 
   async getUserById(userID: ID, projection?: {}) {
-    if (!this.validateObjectId(userID)) throw new Error("Invalid user ID");
+    this.validateObjectId(userID, "Invalid User ID");
 
     return await UserModel.findOne({ _id: userID }, projection);
   }
 
   async getPostById(id: ID) {
-    if (!this.validateObjectId(id)) throw new Error("Invalid post ID");
-
+    this.validateObjectId(id, "Invalid Post ID");
     return await PostModel.findById(id, { userID: 0 });
   }
 
   async getUserPosts(userID: ID) {
-    if (!this.validateObjectId(userID)) throw new Error("Invalid user ID");
-
+    this.validateObjectId(userID, "Invalid User ID");
     return await PostModel.find({ userID });
   }
 
   async createPost(post: Post) {
-    if (!this.validateObjectId(post.userID)) throw new Error("Invalid post ID");
-
+    this.validateObjectId(post.userID, "Invalid User ID");
     return await new PostModel(post).save();
   }
 
   async updatePostById(id: string, post: CreatePostRequest) {
-    if (!this.validateObjectId(id)) throw new Error("Invalid post ID");
+    this.validateObjectId(id, "Invalid Post ID");
 
-    const updatePart: typeof post = {};
-
-    post.title ? (updatePart.title = post.title) : null;
-    post.url ? (updatePart.url = post.url) : null;
+    const updatePayload = Object.keys(post).reduce((acc, key) => {
+      const value = post[key as keyof CreatePostRequest];
+      if (value !== undefined && value !== null) {
+        acc[key as keyof CreatePostRequest] = value;
+      }
+      return acc;
+    }, {} as Partial<CreatePostRequest>);
 
     return await PostModel.findByIdAndUpdate(
       id,
       {
-        $set: updatePart,
+        $set: updatePayload,
       },
       { new: true }
     );
   }
 
   async deletePost(id: ID) {
-    if (!this.validateObjectId(id)) throw new Error("Invalid post ID");
-
+    this.validateObjectId(id, "Invalid Post ID");
     return await PostModel.findByIdAndDelete(id);
   }
 
   async createLike(like: Like) {
-    if (
-      !this.validateObjectId(like.postID) ||
-      !this.validateObjectId(like.userID)
-    ) {
-      throw new Error("Invalid post ID or user ID");
-    }
+    this.validateObjectId(like.postID, "Invalid Post ID");
+    this.validateObjectId(like.userID, "Invalid User ID");
 
     const existing = await LikeModel.findOne({
       userID: like.userID,
@@ -95,12 +90,8 @@ export class MongoDBDatastore implements Datastore {
   }
 
   async createComment(comment: Comment) {
-    if (
-      !this.validateObjectId(comment.userID) ||
-      !this.validateObjectId(comment.postID)
-    ) {
-      throw new Error("Invalid post ID or user ID");
-    }
+    this.validateObjectId(comment.postID, "Invalid Post ID");
+    this.validateObjectId(comment.userID, "Invalid User ID");
 
     const post = await this.getPostById(comment.postID);
     if (!post) throw new Error("Post not found");
@@ -109,13 +100,12 @@ export class MongoDBDatastore implements Datastore {
   }
 
   async getPostComments(postID: ID) {
-    if (!this.validateObjectId(postID)) throw new Error("Invalid post ID");
-
+    this.validateObjectId(postID, "Invalid Post ID");
     return await CommentModel.find({ postID });
   }
 
   async updateCommentById(id: ID, comment: CreateCommentRequest) {
-    if (!this.validateObjectId(id)) throw new Error("Invalid comment ID");
+    this.validateObjectId(id, "Invalid comment ID");
 
     return await CommentModel.findByIdAndUpdate(
       id,
@@ -125,8 +115,7 @@ export class MongoDBDatastore implements Datastore {
   }
 
   async deleteComment(id: ID) {
-    if (!this.validateObjectId(id)) throw new Error("Invalid comment ID");
-
+    this.validateObjectId(id, "Invalid comment ID");
     return await CommentModel.findByIdAndDelete(id);
   }
 }

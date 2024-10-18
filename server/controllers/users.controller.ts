@@ -79,6 +79,7 @@ const signUp = asyncWrapper<ExpressHandler<User, ApiResponse<User>>>(
 
     res.cookie("token", token, {
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
       maxAge: 3600000,
     });
 
@@ -130,6 +131,7 @@ const signIn = asyncWrapper<ExpressHandler<CreateUserRequest>>(
 
     res.cookie("token", token, {
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
       maxAge: 3600000,
     });
 

@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import cors, { CorsOptions } from "cors";
 import { MongoDBDatastore } from "./dataStore/mongoDB/index";
 
 import userRouter from "./router/user.router";
@@ -10,15 +11,23 @@ import likeRouter from "./router/like.router";
 import { globalError } from "./middlewares/globalError";
 import { notFoundRoute } from "./middlewares/notFoundRoute";
 import commentRouter from "./router/comment.router";
+import rootRouter from "./router/root.router";
 
 dotenv.config();
 
 const app = express();
 export const db = new MongoDBDatastore();
 
+const corsOptions: CorsOptions = {
+  origin: ["http://localhost:3000"],
+  credentials: true,
+};
+
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors(corsOptions));
 
+app.use("/", rootRouter);
 app.use("/users", userRouter);
 app.use("/posts", postRouter);
 app.use("/likes", likeRouter);
