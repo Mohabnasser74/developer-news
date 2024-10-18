@@ -6,7 +6,7 @@ import { PostModel } from "../../models/post.model";
 import { LikeModel } from "../../models/like.model";
 import { CommentModel } from "../../models/comment.model";
 import { CreateCommentRequest, CreatePostRequest } from "../../api";
-import { isValidObjectId } from "mongoose";
+import { isValidObjectId, ProjectionType, UpdateQuery } from "mongoose";
 
 export class MongoDBDatastore implements Datastore {
   private validateObjectId(id: ID, errorMessage: string): void {
@@ -16,21 +16,20 @@ export class MongoDBDatastore implements Datastore {
   async createUser(user: User) {
     user.password = await bcrypt.hash(user.password, 10);
     const newUser = await new UserModel(user).save();
-    newUser.password = "";
+    newUser.password = "****";
     return newUser;
   }
 
-  async getUserByEmail(email: string, projection?: {}) {
+  async getUserByEmail(email: string, projection?: ProjectionType<User>) {
     return await UserModel.findOne({ email }, projection);
   }
 
-  async getUserByUsername(username: string, projection?: {}) {
+  async getUserByUsername(username: string, projection?: ProjectionType<User>) {
     return await UserModel.findOne({ username }, projection);
   }
 
-  async getUserById(userID: ID, projection?: {}) {
+  async getUserById(userID: ID, projection?: ProjectionType<User>) {
     this.validateObjectId(userID, "Invalid User ID");
-
     return await UserModel.findOne({ _id: userID }, projection);
   }
 
@@ -82,6 +81,7 @@ export class MongoDBDatastore implements Datastore {
       userID: like.userID,
       postID: like.postID,
     });
+
     if (!existing) {
       return await new LikeModel(like).save();
     }
@@ -94,7 +94,7 @@ export class MongoDBDatastore implements Datastore {
     this.validateObjectId(comment.userID, "Invalid User ID");
 
     const post = await this.getPostById(comment.postID);
-    if (!post) throw new Error("Post not found");
+    if (!post) return post;
 
     return await new CommentModel(comment).save();
   }
@@ -107,11 +107,13 @@ export class MongoDBDatastore implements Datastore {
   async updateCommentById(id: ID, comment: CreateCommentRequest) {
     this.validateObjectId(id, "Invalid comment ID");
 
-    return await CommentModel.findByIdAndUpdate(
-      id,
-      { $set: { content: comment.content } },
-      { new: true }
-    );
+    const update: UpdateQuery<typeof comment> = {
+      $set: {
+        content: comment.content,
+      },
+    };
+
+    return await CommentModel.findByIdAndUpdate(id, update, { new: true });
   }
 
   async deleteComment(id: ID) {

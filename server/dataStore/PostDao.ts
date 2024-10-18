@@ -2,8 +2,8 @@ import { Post } from "../types";
 
 export interface PostDao {
   getPostById: (id: string) => Promise<Post | null>;
-  getUserPosts: (userID: string) => Promise<Post[] | null>;
-  createPost: (post: Post) => Promise<Post | null>;
+  getUserPosts: (userID: string) => Promise<Post[]>;
+  createPost: (post: Post) => Promise<Post>;
   updatePostById: (
     id: string,
     post: Omit<Post, "userID">

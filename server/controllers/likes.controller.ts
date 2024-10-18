@@ -19,18 +19,10 @@ const createLike = asyncWrapper<
       });
     }
 
-    const liked = await db.createLike({
+    await db.createLike({
       postID,
       userID,
     });
-
-    if (!liked) {
-      return next({
-        status: 400,
-        message: "Failed to create like.",
-        data: null,
-      });
-    }
 
     res.status(201).json({
       status: 201,

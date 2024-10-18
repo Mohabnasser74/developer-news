@@ -1,7 +1,6 @@
 import { Comment, Post, User } from "./types";
 
-export interface ApiResponse<Data = Record<string, any> | null> {
-  text?: string;
+export interface ApiResponse<Data = Record<string, any>> {
   status: number;
   message: string;
   data: Data | null;

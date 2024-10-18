@@ -3,33 +3,33 @@ import { asyncWrapper } from "../middlewares/asyncWrapper";
 import { ExpressHandler, Post } from "../types";
 import { ApiResponse, CreatePostRequest, ParamsID } from "../api";
 
-const getPost = asyncWrapper<ExpressHandler<{}, ApiResponse<Post>, ParamsID>>(
-  async (req, res, next) => {
-    const postID = req.params.id;
+const getPostById = asyncWrapper<
+  ExpressHandler<{}, ApiResponse<Post>, ParamsID>
+>(async (req, res, next) => {
+  const postID = req.params.id;
 
-    if (!postID) {
-      return next(
-        res.json({ status: 400, message: "Missing id parameter", data: null })
-      );
-    }
+  if (!postID) {
+    return next(
+      res.json({ status: 400, message: "Missing id parameter", data: null })
+    );
+  }
 
-    const post = await db.getPostById(postID);
+  const post = await db.getPostById(postID);
 
-    if (!post) {
-      return next({
-        status: 404,
-        message: "Post not found",
-        data: null,
-      });
-    }
-
-    res.status(200).json({
-      status: 200,
-      message: "Post retrieved successfully",
-      data: post,
+  if (!post) {
+    return next({
+      status: 404,
+      message: "Post not found",
+      data: null,
     });
   }
-);
+
+  res.status(200).json({
+    status: 200,
+    message: "Post retrieved successfully",
+    data: post,
+  });
+});
 
 const getUserPosts = asyncWrapper<
   ExpressHandler<{}, ApiResponse<Post[]>, { userID: string }>
@@ -45,14 +45,6 @@ const getUserPosts = asyncWrapper<
   }
 
   const posts = await db.getUserPosts(userID);
-
-  if (!posts) {
-    return next({
-      status: 404,
-      message: "Posts not found",
-      data: null,
-    });
-  }
 
   res.status(200).json({
     status: 200,
@@ -76,10 +68,6 @@ const createPost = asyncWrapper<
       url,
       userID: req.user.userID,
     });
-
-    if (!post) {
-      return next({ status: 400, message: "Invalid user id", data: null });
-    }
 
     res.status(200).json({
       status: 200,
@@ -147,4 +135,4 @@ const deletePost = asyncWrapper<ExpressHandler<{}, ApiResponse, ParamsID>>(
   }
 );
 
-export { getPost, createPost, getUserPosts, updatePost, deletePost };
+export { getPostById, createPost, getUserPosts, updatePost, deletePost };

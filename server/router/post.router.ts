@@ -2,7 +2,7 @@ import express from "express";
 import {
   getUserPosts,
   createPost,
-  getPost,
+  getPostById,
   updatePost,
   deletePost,
 } from "../controllers/posts.controller";
@@ -14,7 +14,7 @@ postRouter.post("/new", isAuth, createPost);
 postRouter.get("/list/:userID", getUserPosts);
 postRouter
   .route("/:id")
-  .get(getPost)
+  .get(getPostById)
   .put(isAuth, updatePost)
   .delete(isAuth, deletePost);
 
